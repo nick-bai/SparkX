@@ -1,0 +1,4 @@
+**/target/      # 忽略所有 target 目录
+*.md           # 忽略 Markdown 文件
+.git/          # 忽略 .git 目录
+logs

@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: sparkx-postgres
+    environment:
+      POSTGRES_USER: sparkx
+      POSTGRES_PASSWORD: 123123
+      POSTGRES_DB: sparkx
+    volumes:
+      - ./pg-data:/var/lib/postgresql/data
+      - ./sql/sparkx.sql:/docker-entrypoint-initdb.d/sparkx.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sparkx -d sparkx"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: sparkx-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sparkx
+      SPRING_DATASOURCE_USERNAME: sparkx
+      SPRING_DATASOURCE_PASSWORD: 123123
+    ports:
+      - "8989:8989"
+
+  frontend:
+    build: ./frontend
+    container_name: sparkx-frontend
+    ports:
+      - "8189:80"
+    depends_on:
+      - backend
+
+volumes:
+  pg-data:

@@ -1,0 +1,3 @@
+*.jar
+/pg-data
+frontend/dist
