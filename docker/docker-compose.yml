@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   postgres:
-    image: pgvector/pgvector:pg15
+    image: crpi-35xwxmfks2ouwnqn.cn-shanghai.personal.cr.aliyuncs.com/sparkx/pgvector:15
     container_name: sparkx-postgres
     environment:
       POSTGRES_USER: sparkx
@@ -20,7 +20,7 @@ services:
       retries: 10
 
   backend:
-    image: nickbai/sparkx-backend:1.0.0
+    image: crpi-35xwxmfks2ouwnqn.cn-shanghai.personal.cr.aliyuncs.com/sparkx/sparkx-backend:1.1.0
     container_name: sparkx-backend
     depends_on:
       postgres:
@@ -33,12 +33,13 @@ services:
       - "8989:8989"
 
   frontend:
-    image: nickbai/sparkx-frontend:1.0.0
+    image: crpi-35xwxmfks2ouwnqn.cn-shanghai.personal.cr.aliyuncs.com/sparkx/sparkx-frontend:1.1.0
     container_name: sparkx-frontend
     ports:
       - "8189:80"
     depends_on:
       - backend
-
+    volumes:
+      - ./frontend/config.js:/usr/share/nginx/html/config.js
 volumes:
   pg-data:

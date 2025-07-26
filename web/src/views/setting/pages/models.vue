@@ -7,9 +7,9 @@
 			<el-tab-pane label="向量模型" :name="2">
 				<model-list-page :key="randomKey" :models-list="modelsList" @success="getModelList"></model-list-page>
 			</el-tab-pane>
-			<!--<el-tab-pane label="重排模型" :name="3">
+			<el-tab-pane label="重排模型" :name="3">
 				<model-list-page :key="randomKey" :models-list="modelsList" @success="getModelList"></model-list-page>
-			</el-tab-pane>-->
+			</el-tab-pane>
 		</el-tabs>
 	</div>
 </template>

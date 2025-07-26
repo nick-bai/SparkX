@@ -32,9 +32,11 @@ import sparkx.service.vo.workflow.NextAnswerNodeVo;
 import sparkx.service.vo.workflow.NodeRuntimeVo;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -145,15 +147,13 @@ public class DatasetNode implements IWorkflowNode {
         searchDataVo.setTopRank(nodeObject.getInt("topRank"));
         searchDataVo.setType("embedding");
         List<SearchVo> searchRes = searchService.search(searchDataVo);
-        StringBuilder content = new StringBuilder();
-        for (SearchVo searchVo : searchRes) {
-            content.append(searchVo.getContent());
-        }
 
         // 写入上下文，记录召回信息
         JSONObject outputData = JSONUtil.parseObj(context.getOutputData());
         outputData.set("datasets.search", JSONUtil.toJsonStr(searchRes));
-        outputData.set("sys.result", content);
+        outputData.set("datasets.rerankModelId", nodeObject.getStr("rerankModelId"));
+        outputData.set("datasets.originalResult", searchRes.stream().map(SearchVo::getContent).collect(Collectors.toList()));
+        outputData.set("sys.result", searchRes.stream().map(SearchVo::getContent).collect(Collectors.joining("\n")));
         context.setOutputData(outputData.toString());
         applicationWorkflowRuntimeContextMapper.updateById(context);
 

@@ -210,7 +210,7 @@ export default {
 		},
 		// 复制
 		copy() {
-			let text = this.domain + '/chat/' + this.appId
+			let text = this.domain + '/#/chat/' + this.accessToken
 			navigator.clipboard.writeText(text).then(() => {
 				this.$message.success('复制成功')
 			}).catch(error => {

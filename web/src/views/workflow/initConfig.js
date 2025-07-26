@@ -47,6 +47,7 @@ export default {
 		datasets: [],
 		topRank: 3,
 		similarity: 0.90,
+		rerankModelId: "",
 		outData: [
 			{field: 'sys.result', name: '检索结果'},
 		]

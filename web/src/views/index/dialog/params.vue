@@ -29,6 +29,22 @@
 					</div>
 				</div>
 			</el-form-item>
+			<el-form-item>
+				<template #label>
+					文本重排
+					<el-tooltip effect="dark" content="使用模型计算候选文本与查询文本的相关性得分并返回分数后重新排序提高问答质量" placement="top-start">
+						<el-icon size="16"><InfoFilled /></el-icon>
+					</el-tooltip>
+				</template>
+				<el-select v-model="form.rerankModelId" placeholder="请选择重排模型" clearable>
+					<el-option
+						v-for="item in rerankList"
+						:key="item.modelId"
+						:label="item.name"
+						:value="item.modelId">
+					</el-option>
+				</el-select>
+			</el-form-item>
 			<!--<el-form-item label="无召回片段">
 				<el-switch
 					:active-value="1"
@@ -73,8 +89,12 @@ export default {
 	data() {
 		return {
 			visible: false,
-			form: {}
+			form: {},
+			rerankList: []
 		}
+	},
+	mounted() {
+		this.getRerankList()
 	},
 	methods: {
 		//显示
@@ -89,7 +109,11 @@ export default {
 		},
 		setData(row) {
 			this.form = row
-			console.log('xx', this.form)
+		},
+		// 获取重排模型
+		async getRerankList() {
+			let res = await this.$API.models.rerankList.get()
+			this.rerankList = res.data
 		}
 	}
 }

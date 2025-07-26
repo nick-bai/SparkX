@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import sparkx.common.core.AjaxResult;
 import sparkx.service.service.interfaces.system.IModelsService;
+import sparkx.service.vo.system.ModelVo;
 import sparkx.service.vo.system.ModelsInfoVo;
 import sparkx.service.vo.system.ModelsVo;
 
@@ -51,5 +52,14 @@ public class ModelsController {
 
         iModelsService.editModel(modelsInfoVo);
         return AjaxResult.success();
+    }
+
+    /**
+     * 获取重排模型
+     */
+    @GetMapping("/rerankList")
+    public AjaxResult<List<ModelVo>> getRerankList() {
+
+        return AjaxResult.success(iModelsService.getRerankList());
     }
 }

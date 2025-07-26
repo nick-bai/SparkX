@@ -266,7 +266,8 @@ export default {
 				answerType: "model",
 				redirectSimilar: 0.900
 			},
-			datasetVisible: false
+			datasetVisible: false,
+			tryTimes: 0
 		}
 	},
 	mounted() {
@@ -292,7 +293,14 @@ export default {
 
 			if (running) {
 				setTimeout(() => {
+					if (this.tryTimes >= 100) {
+						running = false
+						this.$message.error("系统向量时间过长或遇到错误，请刷新看结果")
+						return
+					}
+
 					this.getList()
+					this.tryTimes++
 				}, 1500)
 			}
 		},

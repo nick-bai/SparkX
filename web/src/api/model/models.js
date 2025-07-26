@@ -25,5 +25,13 @@ export default {
 
 			return await http.post(this.url, data);
 		}
+	},
+	rerankList: {
+		url: `${config.API_URL}/models/rerankList`,
+		name: "获取重排模型列表",
+		get: async function(data={}){
+
+			return await http.get(this.url, data);
+		}
 	}
 }

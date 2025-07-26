@@ -85,6 +85,17 @@
 					show-input>
 				</el-slider>
 			</div>
+			<div class="flex-center no-param" style="margin-top: 10px;background: #fff">
+				<span style="width: 80px;color: #1a1a1a">重排模型</span>
+				<el-select v-model="form.rerankModelId" placeholder="请选择重排模型" clearable>
+					<el-option
+						v-for="item in rerankList"
+						:key="item.modelId"
+						:label="item.name"
+						:value="item.modelId"
+					/>
+				</el-select>
+			</div>
 		</div>
 
 		<el-dialog
@@ -124,12 +135,15 @@ export default {
 			form: {},
 			options: [],
 			inputData: [], // 入参
-			datasetVisible: false
+			datasetVisible: false,
+			rerankList: []
 		}
 	},
 	created() {
 		this.form = this.formData
 		this.inputData = this.formData.inputData
+
+		this.getRerankList()
 	},
 	methods: {
 		// 输入选择
@@ -154,6 +168,11 @@ export default {
 		delDataset(index) {
 			this.form.datasets.splice(index, 1)
 			this.$emit("dataChange", this.form)
+		},
+		// 获取重排模型
+		async getRerankList() {
+			let res = await this.$API.models.rerankList.get()
+			this.rerankList = res.data
 		},
 		iconComponent
 	}

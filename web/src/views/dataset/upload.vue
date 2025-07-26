@@ -228,7 +228,7 @@ export default {
 			nowSegmentData: [],
 			fileType: 'txt',
 			acceptConfig: '.txt,.md,.pdf,.docx,.html,.xls,.xlsx,.csv',
-			excelTpl: '/tpl/excel表格模版.xlsx',
+			excelTpl: '/tpl/excel表格模板.xlsx',
 			qaTpl: '/tpl/qa模板.xlsx',
 			loading: false,
 			editorVisible: false,

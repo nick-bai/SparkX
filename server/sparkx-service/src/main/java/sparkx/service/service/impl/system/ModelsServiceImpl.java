@@ -15,11 +15,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sparkx.common.enums.ModelType;
+import sparkx.common.enums.StatusEnum;
 import sparkx.common.exception.BusinessException;
 import sparkx.common.utils.Tool;
 import sparkx.service.entity.system.ModelsEntity;
 import sparkx.service.mapper.system.ModelsMapper;
 import sparkx.service.service.interfaces.system.IModelsService;
+import sparkx.service.vo.system.ModelVo;
 import sparkx.service.vo.system.ModelsInfoVo;
 import sparkx.service.vo.system.ModelsVo;
 
@@ -99,5 +102,28 @@ public class ModelsServiceImpl implements IModelsService {
         info.setUpdateTime(Tool.nowDateTime());
 
         modelsMapper.updateById(info);
+    }
+
+    /**
+     * 获取重排模型的列表
+     * @return List<ModelVo>
+     */
+    @Override
+    public List<ModelVo> getRerankList() {
+
+        List<ModelsEntity> dbRankList = modelsMapper.selectList(new QueryWrapper<ModelsEntity>()
+                        .select("model_id,name")
+                        .eq("type", ModelType.RERANK.getCode())
+                        .eq("status", StatusEnum.YES.getCode()));
+
+        List<ModelVo> reRankList = new LinkedList<>();
+        for (ModelsEntity entity : dbRankList) {
+            ModelVo vo = new ModelVo();
+            BeanUtils.copyProperties(entity, vo);
+
+            reRankList.add(vo);
+        }
+
+        return reRankList;
     }
 }

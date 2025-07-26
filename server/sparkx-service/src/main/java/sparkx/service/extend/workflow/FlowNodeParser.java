@@ -155,9 +155,11 @@ public class FlowNodeParser {
                     if (contextEntity.getModelData() != null) {
                         JSONObject jsonData = JSONUtil.parseObj(contextEntity.getModelData());
 
-                        inputTokens += jsonData.getInt("inputTokenCount");
-                        outputTokens += jsonData.getInt("outputTokenCount");
-                        totalTokens += jsonData.getInt("totalTokenCount");
+                        if (jsonData.getInt("inputTokenCount") != null) {
+                            inputTokens += jsonData.getInt("inputTokenCount");
+                            outputTokens += jsonData.getInt("outputTokenCount");
+                            totalTokens += jsonData.getInt("totalTokenCount");
+                        }
                     }
 
                 }

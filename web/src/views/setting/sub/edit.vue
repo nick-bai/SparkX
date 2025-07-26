@@ -27,7 +27,7 @@
 				</template>
 				<el-input v-model="url.value"></el-input>
 			</el-form-item>
-			<el-form-item label="可用模型" prop="models">
+			<el-form-item label="可用模型" prop="models" v-if="form.type != 3">
 				<el-select v-model="modelsArr" multiple placeholder="请选择" style="width: 100%">
 					<el-option
 						v-for="item in modelsOptions"

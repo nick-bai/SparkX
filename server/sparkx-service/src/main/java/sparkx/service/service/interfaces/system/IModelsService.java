@@ -9,6 +9,7 @@
 // +----------------------------------------------------------------------
 package sparkx.service.service.interfaces.system;
 
+import sparkx.service.vo.system.ModelVo;
 import sparkx.service.vo.system.ModelsInfoVo;
 import sparkx.service.vo.system.ModelsVo;
 
@@ -36,4 +37,10 @@ public interface IModelsService {
      * @param modelsInfoVo ModelsInfoVo
      */
     void editModel(ModelsInfoVo modelsInfoVo);
+
+    /**
+     * 获取重排模型的列表
+     * @return List<ModelVo>
+     */
+    List<ModelVo> getRerankList();
 }

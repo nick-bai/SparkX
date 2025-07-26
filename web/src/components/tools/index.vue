@@ -2,24 +2,24 @@
 	<div class="tools-list" v-if="toolsList.length > 0">
 		<el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
 			<el-tab-pane label="自定义插件" name="first">
-				<el-radio-group v-model="selectedToolsIds" class="too-radio-list">
-					<el-radio :label="item.id" border class="radio-item" v-for="item in toolsList" :key="item.id">
+				<el-checkbox-group v-model="selectedToolsIds" class="too-radio-list">
+					<el-checkbox :label="item.id" border class="radio-item" v-for="item in toolsList" :key="item.id">
 						<div style="display: flex;align-items: center;">
 							<el-icon size="26" color="var(--el-color-theme)"><ElementPlus /></el-icon>
 							<div class="line1 name">{{ item.title }}</div>
 						</div>
-					</el-radio>
-				</el-radio-group>
+					</el-checkbox>
+				</el-checkbox-group>
 			</el-tab-pane>
 			<el-tab-pane label="MCP插件" name="second">
-				<el-radio-group v-model="selectedToolsIds" class="too-radio-list">
-					<el-radio :label="item.id" border class="radio-item" v-for="item in toolsList" :key="item.id">
+				<el-checkbox-group v-model="selectedToolsIds" class="too-radio-list">
+					<el-checkbox :label="item.id" border class="radio-item" v-for="item in toolsList" :key="item.id">
 						<div style="display: flex;align-items: center;">
 							<el-icon size="26" color="var(--el-color-theme)"><ElementPlus /></el-icon>
 							<div class="line1 name">{{ item.title }}</div>
 						</div>
-					</el-radio>
-				</el-radio-group>
+					</el-checkbox>
+				</el-checkbox-group>
 			</el-tab-pane>
 		</el-tabs>
 
@@ -55,7 +55,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.selectedToolsIds = this.toolIds[0]
+		this.selectedToolsIds = this.toolIds
 		this.getToolList(1)
 	},
 	methods: {
@@ -74,7 +74,7 @@ export default {
 			let selectedTools = []
 
 			this.toolsList.forEach(item => {
-				if (item.id === this.selectedToolsIds) {
+				if (this.selectedToolsIds.indexOf(item.id) !== -1) {
 					selectedTools.push(item)
 				}
 			})

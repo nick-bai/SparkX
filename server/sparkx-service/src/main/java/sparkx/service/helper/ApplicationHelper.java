@@ -10,17 +10,22 @@
 package sparkx.service.helper;
 
 import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONUtil;
 import cn.hutool.jwt.JWT;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.chat.listener.ChatModelListener;
 import dev.langchain4j.model.chat.listener.ChatModelRequestContext;
 import dev.langchain4j.model.chat.request.ChatRequest;
 import dev.langchain4j.model.chat.request.ChatRequestParameters;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
+import dev.langchain4j.model.scoring.ScoringModel;
+import dev.langchain4j.rag.content.aggregator.ContentAggregator;
+import dev.langchain4j.rag.content.aggregator.ReRankingContentAggregator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -37,6 +42,7 @@ import sparkx.service.entity.system.ModelsEntity;
 import sparkx.service.entity.system.SystemTokensEntity;
 import sparkx.service.entity.tool.ToolsEntity;
 import sparkx.service.entity.workflow.ApplicationWorkflowRuntimeContextEntity;
+import sparkx.service.extend.rerank.RerankScoringModel;
 import sparkx.service.mapper.application.ApplicationDatasetRelationMapper;
 import sparkx.service.mapper.application.ApplicationToolRelationMapper;
 import sparkx.service.mapper.application.ApplicationWorkflowRuntimeContextMapper;
@@ -52,11 +58,15 @@ import sparkx.service.vo.workflow.NextAnswerNodeVo;
 import sparkx.service.vo.workflow.NodeRuntimeVo;
 import sparkx.service.vo.workflow.NodeVo;
 
+import java.util.AbstractMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Component
 @Slf4j
@@ -331,5 +341,87 @@ public class ApplicationHelper {
                 log.error("调用的参数: parameters {}", parameters);
             }
         };
+    }
+
+    /**
+     * 构建rerank模型
+     * @param modelId String
+     * @return ContentAggregator
+     */
+    public ContentAggregator buildRerank(String modelId) {
+
+        ContentAggregator contentAggregator = null;
+        ModelsEntity modelInfo = modelsMapper.selectById(modelId);
+        if (modelInfo != null) {
+            JSONArray jsonArr = JSONUtil.parseArray(modelInfo.getCredential());
+            String apiKey = JSONUtil.parseObj(jsonArr.get(0)).getStr("value");
+            String modelName = modelInfo.getModels().split(",")[0];
+
+            JSONArray optionsArr = JSONUtil.parseArray(modelInfo.getOptions());
+            String baseUrl = JSONUtil.parseObj(optionsArr.get(0)).getStr("value");
+
+            if (!apiKey.isBlank() && !modelName.isBlank() && !baseUrl.isBlank()) {
+
+                // 构建重排模型
+                ScoringModel scoringModel = RerankScoringModel.builder()
+                        .apiKey(apiKey)
+                        .baseUrl(baseUrl)
+                        .modelName(modelName)
+                        .build();
+
+                contentAggregator = ReRankingContentAggregator.builder()
+                        .scoringModel(scoringModel)
+                        .build();
+            }
+        }
+
+        return contentAggregator;
+    }
+
+    /**
+     * 重排结果
+     * @param modelId String
+     * @param result List<String>
+     * @param query String
+     * @return List<String>
+     */
+    public List<String> rerankResult(String modelId, List<String> result, String query) {
+
+        if (result.size() <= 1) {
+            return null;
+        }
+
+        ModelsEntity modelInfo = modelsMapper.selectById(modelId);
+        if (modelInfo != null) {
+            JSONArray jsonArr = JSONUtil.parseArray(modelInfo.getCredential());
+            String apiKey = JSONUtil.parseObj(jsonArr.get(0)).getStr("value");
+            String modelName = modelInfo.getModels().split(",")[0];
+
+            JSONArray optionsArr = JSONUtil.parseArray(modelInfo.getOptions());
+            String baseUrl = JSONUtil.parseObj(optionsArr.get(0)).getStr("value");
+
+            if (!apiKey.isBlank() && !modelName.isBlank() && !baseUrl.isBlank()) {
+
+                // 构建重排模型
+                ScoringModel scoringModel = RerankScoringModel.builder()
+                        .apiKey(apiKey)
+                        .baseUrl(baseUrl)
+                        .modelName(modelName)
+                        .build();
+
+                Response<List<Double>> scoreRes = scoringModel.scoreAll(result.stream()
+                        .map(TextSegment::from).collect(Collectors.toList()), query);
+                List<Double> scoreList = scoreRes.content();
+
+                // 根据重排结果重排原始数组
+                return IntStream.range(0, result.size())
+                        .mapToObj(i -> new AbstractMap.SimpleEntry<>(result.get(i), scoreList.get(i)))
+                        .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()))
+                        .map(AbstractMap.SimpleEntry::getKey)
+                        .collect(Collectors.toList());
+            }
+        }
+
+        return null;
     }
 }

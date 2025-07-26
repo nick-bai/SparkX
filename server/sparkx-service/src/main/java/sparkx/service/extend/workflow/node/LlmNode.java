@@ -49,6 +49,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static dev.langchain4j.data.message.ChatMessageSerializer.messagesToJson;
 
@@ -255,7 +256,15 @@ public class LlmNode implements IWorkflowNode {
                 PromptTemplate questionPrompt = PromptTemplate.from("{{question}}\n\n Answer using the following information:\n\n {{sys.result}}");
                 Map<String, Object> variables = new HashMap<>();
                 variables.put("question", question);
-                variables.put("sys.result", inputObject.getStr("sys.result"));
+                // 用户设置重排模型
+                if (!inputObject.getStr("datasets.rerankModelId").isBlank()) {
+                    List<String> searchResult = applicationHelper.rerankResult(inputObject.getStr("datasets.rerankModelId"),
+                            JSONUtil.toList(inputObject.getStr("datasets.originalResult"), String.class),
+                            question);
+                    variables.put("sys.result", String.join("\n", searchResult));
+                } else {
+                    variables.put("sys.result", inputObject.getStr("sys.result"));
+                }
 
                 Prompt prompt = questionPrompt.apply(variables);
                 llmAnswerVo.setUserMessage(((TextContent)prompt.toUserMessage().contents().get(0)).text());

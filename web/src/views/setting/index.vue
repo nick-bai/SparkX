@@ -97,7 +97,8 @@ export default {
 	.menu {
 		width: 100%;
 		height: calc(100vh - 200px);
-		padding: 20px;
+		display: flex;
+		justify-content: center;
 		background: #f5f5f5;
 		border-radius: 6px;
 		margin-top: 20px;
