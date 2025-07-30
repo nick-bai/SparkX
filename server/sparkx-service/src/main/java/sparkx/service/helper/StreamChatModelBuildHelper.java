@@ -106,6 +106,7 @@ public class StreamChatModelBuildHelper {
         return OpenAiStreamingChatModel.builder()
                 .baseUrl(url)
                 .apiKey(key)
+                .returnThinking(true)
                 .modelName(applicationInfo.getModelName())
                 .listeners(List.of(applicationHelper.observability()))
                 .build();

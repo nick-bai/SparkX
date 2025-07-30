@@ -5,11 +5,11 @@
     <parent>
         <groupId>cn.sparkshop.ai</groupId>
         <artifactId>cn.sparkshop</artifactId>
-        <version>1.1.1</version>
+        <version>1.1.2</version>
     </parent>
 
     <artifactId>sparkx-service</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -125,6 +125,11 @@
         <dependency>
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>converter-jackson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-core</artifactId>
         </dependency>
     </dependencies>
 

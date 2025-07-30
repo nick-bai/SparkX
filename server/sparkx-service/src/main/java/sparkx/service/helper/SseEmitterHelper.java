@@ -12,6 +12,7 @@ package sparkx.service.helper;
 import cn.hutool.core.date.TimeInterval;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import dev.langchain4j.model.chat.response.PartialThinking;
 import dev.langchain4j.service.TokenStream;
 import dev.langchain4j.service.tool.ToolExecution;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ import sparkx.service.extend.workflow.SendEndCallback;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
@@ -45,11 +47,14 @@ public class SseEmitterHelper {
 
         // 消息开始
         sendStartSse(emitter);
+        AtomicBoolean hasReasoningContent = new AtomicBoolean(false); // 是否有思考过程
+        AtomicBoolean hasSendStart = new AtomicBoolean(false); // 是有发送了思考开始标识
+        AtomicBoolean hasSendEnd = new AtomicBoolean(false); // 是否发送了思考结束标识
 
         final TimeInterval timer = new TimeInterval();
         tokenStream
+                // 整理并转换召回的片段数据，返回前端
                 .onRetrieved((retrievedList) -> {
-                    // 整理并转换召回的片段数据，返回前端
                     List<Map<String, Object>> retiredMapList = new ArrayList<>();
                     retrievedList.forEach(item -> {
                         Map<String, Object> map = new HashMap<>();
@@ -64,35 +69,35 @@ public class SseEmitterHelper {
                     // 召回知识库片段
                     sendMetaSse(emitter, retiredMapList);
                 })
-                .onToolExecuted((ToolExecution toolExecution) -> sendToolSse(emitter, toolExecution.request().name()))
-                .onPartialResponse((content) -> {
-                    // 加空格配合前端的fetchEventSource进行解析，
-                    // 见https://github.com/Azure/fetch-event-source/blob/45ac3cfffd30b05b79fbf95c21e67d4ef59aa56a/src/parse.ts#L129-L133
+                // 思考过程
+                .onPartialThinking((PartialThinking reasoningContent) -> {
                     try {
+                        hasReasoningContent.set(true);
 
-                        String[] lines = content.split("[\\n]", -1);
-                        if (lines.length > 1) {
-
-                            emitter.send(Tool.buildSendData(runtimeId, nodeId, lines[0]));
-
-                            for (int i = 1; i < lines.length; i++) {
-                                /**
-                                 * 当响应结果的content中包含有多行文本时，
-                                 * 前端的fetch-event-source框架的BUG会将包含有换行符的那一行内容替换为空字符串，
-                                 * 故需要先将换行符与后面的内容拆分并转成，前端碰到换行标志时转成换行符处理
-                                 */
-                                emitter.send(Tool.buildSendData(runtimeId, nodeId, "-_-_wrap_-_-"));
-                                emitter.send(Tool.buildSendData(runtimeId, nodeId, lines[i]));
-                            }
-                        } else {
-
-                            emitter.send(Tool.buildSendData(runtimeId, nodeId, content));
+                        if (!hasSendStart.get()) {
+                            emitter.send(Tool.buildSendData(runtimeId, nodeId, "<think>"));
+                            hasSendStart.set(true);
                         }
 
-                    } catch (IOException e) {
-                        //log.error("拆解AI返回信息失败：", e);
-                        sendErrorSse(emitter, e.getMessage());
-                        //emitter.complete();
+                        sendSseData(reasoningContent.text(), emitter, runtimeId, nodeId);
+                    } catch (Exception e) {
+                        emitter.completeWithError(e);
+                    }
+                })
+                // 工具调用
+                .onToolExecuted((ToolExecution toolExecution) -> {
+                    sendToolSse(emitter, toolExecution.request().name());
+                })
+                .onPartialResponse((content) -> {
+                    try {
+                        if (hasReasoningContent.get() && !hasSendEnd.get()) {
+                            emitter.send(Tool.buildSendData(runtimeId, nodeId, "</think>"));
+                            hasSendEnd.set(true);
+                        }
+
+                        sendSseData(content, emitter, runtimeId, nodeId);
+                    } catch (Exception e) {
+                        emitter.completeWithError(e);
                     }
                 })
                 .onCompleteResponse((response) -> {
@@ -131,37 +136,46 @@ public class SseEmitterHelper {
     public void asyncSend2Client(TokenStream tokenStream, SseEmitter emitter, long runtimeId, String nodeId,
                                  boolean needSend, SendEndCallback sendEndCallback) {
 
+        AtomicBoolean hasReasoningContent = new AtomicBoolean(false); // 是否有思考过程
+        AtomicBoolean hasSendStart = new AtomicBoolean(false); // 是有发送了思考开始标识
+        AtomicBoolean hasSendEnd = new AtomicBoolean(false); // 是否发送了思考结束标识
+
         tokenStream
-                .onPartialResponse((content) -> {
-                    // 加空格配合前端的fetchEventSource进行解析，
-                    // 见https://github.com/Azure/fetch-event-source/blob/45ac3cfffd30b05b79fbf95c21e67d4ef59aa56a/src/parse.ts#L129-L133
+                // 思考过程
+                .onPartialThinking((PartialThinking reasoningContent) -> {
                     if (needSend) {
                         try {
+                            hasReasoningContent.set(true);
 
-                            String[] lines = content.split("[\\n]", -1);
-                            if (lines.length > 1) {
-
-                                emitter.send(Tool.buildSendData(runtimeId, nodeId, lines[0]));
-                                for (int i = 1; i < lines.length; i++) {
-                                    /**
-                                     * 当响应结果的content中包含有多行文本时，
-                                     * 前端的fetch-event-source框架的BUG会将包含有换行符的那一行内容替换为空字符串，
-                                     * 故需要先将换行符与后面的内容拆分并转成，前端碰到换行标志时转成换行符处理
-                                     */
-                                    emitter.send(Tool.buildSendData(runtimeId, nodeId, "-_-_wrap_-_-"));
-                                    emitter.send(Tool.buildSendData(runtimeId, nodeId, lines[i]));
-                                }
-                            } else {
-                                emitter.send(Tool.buildSendData(runtimeId, nodeId, content));
+                            if (!hasSendStart.get()) {
+                                emitter.send(Tool.buildSendData(runtimeId, nodeId, "<think>"));
+                                hasSendStart.set(true);
                             }
 
-                        } catch (IOException e) {
-                            //log.error("拆解AI返回信息失败：", e);
-                            sendErrorSse(emitter, e.getMessage());
+                            sendSseData(reasoningContent.text(), emitter, runtimeId, nodeId);
+                        } catch (Exception e) {
+                            emitter.completeWithError(e);
                         }
                     }
                 })
-                .onToolExecuted((ToolExecution toolExecution) -> sendToolSse(emitter, toolExecution.request().name()))
+                // 工具调用
+                .onToolExecuted((ToolExecution toolExecution) -> {
+                    sendToolSse(emitter, toolExecution.request().name());
+                })
+                .onPartialResponse((content) -> {
+                    if (needSend) {
+                        try {
+                            if (hasReasoningContent.get() && !hasSendEnd.get()) {
+                                emitter.send(Tool.buildSendData(runtimeId, nodeId, "</think>"));
+                                hasSendStart.set(true);
+                            }
+
+                            sendSseData(content, emitter, runtimeId, nodeId);
+                        } catch (Exception e) {
+                            emitter.completeWithError(e);
+                        }
+                    }
+                })
                 .onCompleteResponse((response) -> {
                     // 输入的token
                     int inputTokenCount = response.tokenUsage().totalTokenCount();
@@ -260,6 +274,44 @@ public class SseEmitterHelper {
         } catch (IOException e) {
             //log.error("startSse error", e);
             sseEmitter.completeWithError(e);
+        }
+    }
+
+    /**
+     * 发送模型返回数据
+     * @param content String
+     * @param emitter SseEmitter
+     * @param runtimeId Long
+     * @param nodeId String
+     */
+    private void sendSseData(String content, SseEmitter emitter, Long runtimeId, String nodeId) {
+        // 加空格配合前端的fetchEventSource进行解析，
+        // 见https://github.com/Azure/fetch-event-source/blob/45ac3cfffd30b05b79fbf95c21e67d4ef59aa56a/src/parse.ts#L129-L133
+        try {
+
+            String[] lines = content.split("[\\n]", -1);
+            if (lines.length > 1) {
+
+                emitter.send(Tool.buildSendData(runtimeId, nodeId, lines[0]));
+
+                for (int i = 1; i < lines.length; i++) {
+                    /**
+                     * 当响应结果的content中包含有多行文本时，
+                     * 前端的fetch-event-source框架的BUG会将包含有换行符的那一行内容替换为空字符串，
+                     * 故需要先将换行符与后面的内容拆分并转成，前端碰到换行标志时转成换行符处理
+                     */
+                    emitter.send(Tool.buildSendData(runtimeId, nodeId, "-_-_wrap_-_-"));
+                    emitter.send(Tool.buildSendData(runtimeId, nodeId, lines[i]));
+                }
+            } else {
+
+                emitter.send(Tool.buildSendData(runtimeId, nodeId, content));
+            }
+
+        } catch (IOException e) {
+            //log.error("拆解AI返回信息失败：", e);
+            sendErrorSse(emitter, e.getMessage());
+            //emitter.complete();
         }
     }
 }

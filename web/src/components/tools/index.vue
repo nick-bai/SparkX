@@ -1,8 +1,8 @@
 <template>
-	<div class="tools-list" v-if="toolsList.length > 0">
+	<div class="tools-list">
 		<el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
 			<el-tab-pane label="自定义插件" name="first">
-				<el-checkbox-group v-model="selectedToolsIds" class="too-radio-list">
+				<el-checkbox-group v-model="selectedToolsIds" class="too-radio-list" v-if="toolsList.length > 0">
 					<el-checkbox :label="item.id" border class="radio-item" v-for="item in toolsList" :key="item.id">
 						<div style="display: flex;align-items: center;">
 							<el-icon size="26" color="var(--el-color-theme)"><ElementPlus /></el-icon>
@@ -10,9 +10,15 @@
 						</div>
 					</el-checkbox>
 				</el-checkbox-group>
+				<div v-else>
+					<div class="flex-center-all" style="padding: 20px 10px;background: #f4f4f4">
+						暂无插件
+						<el-button @click="goTo" type="text" style="margin-top: 3px;margin-left: 10px">创建</el-button>
+					</div>
+				</div>
 			</el-tab-pane>
 			<el-tab-pane label="MCP插件" name="second">
-				<el-checkbox-group v-model="selectedToolsIds" class="too-radio-list">
+				<el-checkbox-group v-model="selectedToolsIds" class="too-radio-list" v-if="toolsList.length > 0">
 					<el-checkbox :label="item.id" border class="radio-item" v-for="item in toolsList" :key="item.id">
 						<div style="display: flex;align-items: center;">
 							<el-icon size="26" color="var(--el-color-theme)"><ElementPlus /></el-icon>
@@ -20,15 +26,14 @@
 						</div>
 					</el-checkbox>
 				</el-checkbox-group>
+				<div v-else>
+					<div class="flex-center-all" style="padding: 20px 10px;background: #f4f4f4">
+						暂无插件
+						<el-button @click="goTo" type="text" style="margin-top: 3px;margin-left: 10px">创建</el-button>
+					</div>
+				</div>
 			</el-tab-pane>
 		</el-tabs>
-
-	</div>
-	<div v-else>
-		<div class="flex-center-all" style="padding: 20px 10px;background: #f4f4f4">
-			暂无插件
-			<el-button @click="goTo" type="text" style="margin-top: 3px;margin-left: 10px">创建</el-button>
-		</div>
 	</div>
 	<div class="dialog-footer">
 		<el-button @click="$emit('doClose')">取 消</el-button>
