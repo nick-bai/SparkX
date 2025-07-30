@@ -111,5 +111,11 @@ body {
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
 }
+.md-editor div.default-theme {
+	--md-theme-quote-border: 5px solid #E9E9EB !important;
+}
+.md-editor-preview blockquote {
+	background-color: #f4f4f4 !important;
+}
 @import '@/style/style.scss';
 </style>

@@ -27,8 +27,17 @@
 				</template>
 				<el-input v-model="url.value"></el-input>
 			</el-form-item>
-			<el-form-item label="可用模型" prop="models" v-if="form.type != 3">
-				<el-select v-model="modelsArr" multiple placeholder="请选择" style="width: 100%">
+			<el-form-item label="可用模型" prop="models" v-if="form.type == 3">
+				<el-input type="text" v-model="form.models" placeholder="只支持输入一个模型"/>
+			</el-form-item>
+			<el-form-item label="可用模型" prop="models" v-else>
+				<el-select
+					v-model="modelsArr"
+					multiple
+					filterable
+					allow-create
+					placeholder="请选择"
+					style="width: 100%">
 					<el-option
 						v-for="item in modelsOptions"
 						:key="item.value"
@@ -38,7 +47,13 @@
 				</el-select>
 			</el-form-item>
 			<el-form-item label="函数调用" v-if="form.type == 1">
-				<el-select v-model="functionArr" multiple placeholder="请选择" style="width: 100%">
+				<el-select
+					v-model="functionArr"
+					multiple
+					filterable
+					allow-create
+					placeholder="请选择"
+					style="width: 100%">
 					<el-option
 						v-for="item in functionOptions"
 						:key="item.value"
@@ -145,34 +160,40 @@ export default {
 
 			this.modelsArr = []
 			this.modelsOptions = []
-			res.data.models.split(",").forEach(item => {
-				this.modelsOptions.push({
-					label: item,
-					value: item
-				})
+			if (res.data.models !== '') {
+				res.data.models.split(",").forEach(item => {
+					this.modelsOptions.push({
+						label: item,
+						value: item
+					})
 
-				this.modelsArr.push(item)
-			})
+					this.modelsArr.push(item)
+				})
+			}
 
 			this.functionArr = []
 			this.functionOptions = []
-			res.data.functionCalling.split(",").forEach(item => {
-				this.functionOptions.push({
-					label: item,
-					value: item
-				})
+			if (res.data.functionCalling !== '') {
+				res.data.functionCalling.split(",").forEach(item => {
+					this.functionOptions.push({
+						label: item,
+						value: item
+					})
 
-				this.functionArr.push(item)
-			})
+					this.functionArr.push(item)
+				})
+			}
 		},
 		// 表单提交方法
 		optSubmit(formName) {
+			if (this.form.type != 3) {
+				this.form.models = this.modelsArr.join(",")
+			}
 
 			this.$refs[formName].validate(async (valid) => {
 				if (valid) {
 					this.loading = true
 					this.form.credential = JSON.stringify(this.credential)
-					this.form.models = this.modelsArr.join(",")
 
 					let options = []
 					if (this.temperature) {

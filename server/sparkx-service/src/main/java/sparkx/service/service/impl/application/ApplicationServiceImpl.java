@@ -36,7 +36,6 @@ import sparkx.service.entity.system.SystemUsersEntity;
 import sparkx.service.extend.chat.AgentChat;
 import sparkx.service.extend.chat.WorkflowChat;
 import sparkx.service.helper.ApplicationHelper;
-import sparkx.service.helper.LicenseHelper;
 import sparkx.service.helper.SseEmitterHelper;
 import sparkx.service.helper.UserContextHelper;
 import sparkx.service.mapper.application.*;
@@ -97,9 +96,6 @@ public class ApplicationServiceImpl implements IApplicationService {
 
     @Autowired
     SystemTeamUserMapper systemTeamUserMapper;
-
-    @Autowired
-    LicenseHelper licenseHelper;
 
     @Autowired
     ModelsMapper modelsMapper;
@@ -204,11 +200,6 @@ public class ApplicationServiceImpl implements IApplicationService {
      */
     @Override
     public String addApplication(ApplicationAddValidate validate) {
-
-        long totalApp = applicationMapper.selectCount(new QueryWrapper<>());
-        if (totalApp >= licenseHelper.getAppNum()) {
-            throw new BusinessException(403, "社区版本最多可添加" + licenseHelper.getAppNum() + "个应用，如需更多应用，请购买授权版本！");
-        }
 
         ApplicationEntity entity = new ApplicationEntity();
         entity.setAppId(IdUtil.randomUUID());

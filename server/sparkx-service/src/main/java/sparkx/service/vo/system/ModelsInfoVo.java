@@ -31,6 +31,11 @@ public class ModelsInfoVo implements Serializable {
     private String name;
 
     /**
+     * 模型标识
+     */
+    private String modelFlag;
+
+    /**
      * 类型 1:语言模型 2:向量模型 3:重排模型
      */
     private String type;

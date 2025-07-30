@@ -6,7 +6,7 @@ const DEFAULT_CONFIG = {
 	DASHBOARD_URL: "/index/home",
 
 	//版本号
-	APP_VER: "1.0.1",
+	APP_VER: "1.1.1",
 
 	//内核版本号
 	CORE_VER: "1.0.1",

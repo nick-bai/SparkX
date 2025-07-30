@@ -22,6 +22,11 @@ public class ApplicationLogVo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 记录id
+     */
+    private Integer logId;
+
+    /**
      * 应用id
      */
     private String appId;

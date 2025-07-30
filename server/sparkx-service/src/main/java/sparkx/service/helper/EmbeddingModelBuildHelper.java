@@ -14,6 +14,7 @@ import cn.hutool.json.JSONUtil;
 import dev.langchain4j.community.model.zhipu.ZhipuAiEmbeddingModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.embedding.onnx.allminilml6v2.AllMiniLmL6V2EmbeddingModel;
+import dev.langchain4j.model.ollama.OllamaEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -62,6 +63,11 @@ public class EmbeddingModelBuildHelper {
             return buildZhiPu();
         }
 
+        // ollama
+        if (modelInfo.getModelFlag().equals("ollama")) {
+            return buildOllama();
+        }
+
         // 百度千帆、GPT
         return buildOpenAI();
     }
@@ -76,6 +82,18 @@ public class EmbeddingModelBuildHelper {
                 .model(modelConfig.get("model"))
                 .apiKey(modelConfig.get("key"))
                 .maxRetries(1)
+                .build();
+    }
+
+    /**
+     * 构建智普
+     * @return EmbeddingModel
+     */
+    private EmbeddingModel buildOllama() {
+
+        return OllamaEmbeddingModel.builder()
+                .baseUrl(modelConfig.get("baseUrl"))
+                .modelName(modelConfig.get("model"))
                 .build();
     }
 

@@ -28,7 +28,6 @@ import sparkx.service.entity.application.ApplicationDatasetRelationEntity;
 import sparkx.service.entity.dataset.*;
 import sparkx.service.entity.system.SystemTeamUserEntity;
 import sparkx.service.entity.system.SystemUsersEntity;
-import sparkx.service.helper.LicenseHelper;
 import sparkx.service.helper.UserContextHelper;
 import sparkx.service.mapper.application.ApplicationDatasetRelationMapper;
 import sparkx.service.mapper.dataset.*;
@@ -78,9 +77,6 @@ public class KnowledgeDatasetServiceImpl implements IKnowledgeDatasetService {
 
     @Autowired
     SystemTeamUserMapper systemTeamUserMapper;
-
-    @Autowired
-    LicenseHelper licenseHelper;
 
     /**
      * 获取知识库列表
@@ -193,12 +189,6 @@ public class KnowledgeDatasetServiceImpl implements IKnowledgeDatasetService {
      */
     @Override
     public void addDataset(DatasetValidate validate) {
-
-        // 授权校验
-        long totalDataset = datasetMapper.selectCount(new QueryWrapper<>());
-        if (totalDataset >= licenseHelper.getDatasetNum()) {
-            throw new BusinessException(403, "社区版本最多可添加" + licenseHelper.getDatasetNum() + "个知识库，如需更多知识库，请购买授权版本！");
-        }
 
         KnowledgeDatasetEntity datasetEntity = new KnowledgeDatasetEntity();
         BeanUtils.copyProperties(validate, datasetEntity);

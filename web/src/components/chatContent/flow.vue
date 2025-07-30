@@ -341,6 +341,15 @@ export default {
 
 						that.startReceive = true
 						let resData = JSON.parse(ev.data)
+
+						if (resData.content === '<think>') {
+							resData.content = '<blockquote><think>'
+						}
+
+						if (resData.content === '</think>') {
+							resData.content = '</think></blockquote>'
+						}
+
 						let has = false
 						that.chatLogList[that.nowIndex].content.forEach((item, index) => {
 

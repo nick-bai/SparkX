@@ -50,6 +50,7 @@ public class ModelsServiceImpl implements IModelsService {
         if (status > 0) {
             queryWrapper.eq("status", status);
         }
+        queryWrapper.orderByAsc("model_id");
 
         List<ModelsEntity> modelsList = modelsMapper.selectList(queryWrapper);
 

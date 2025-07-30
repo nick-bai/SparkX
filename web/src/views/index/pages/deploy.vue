@@ -9,21 +9,24 @@
 						<div class="app-title">{{ appInfo.name }}</div>
 					</div>
 					<div class="base-style">
-						是否对外发布
-						<el-switch
-							style="margin-left: 10px"
-							v-model="appInfo.status"
-							disabled
-						>
-						</el-switch>
+						<span style="font-size: 14px;margin-right: 10px;">是否对外发布</span>
+						<div class="app-active" v-if="appInfo.status == 2">
+							<el-icon style="margin-right:5px;font-size: 14px"><CircleCheck /></el-icon>
+							<span style="font-size: 13px;">已发布</span>
+						</div>
+						<div class="app-unactive" v-if="appInfo.status == 1">
+							<el-icon style="margin-right:5px;font-size: 14px"><CircleClose /></el-icon>
+							<span style="font-size: 13px;">未发布</span>
+						</div>
 					</div>
-					<div class="base-style code-bg" style="width: 600px">
+					<div class="base-style code-bg" style="width: 600px" v-if="appInfo.status == 2">
 						{{ domain }}/#/chat/{{ accessToken }}
 						<el-icon size="16px" style="margin-left: 5px"><CopyDocument @click="copy"/></el-icon>
 					</div>
 					<div class="base-style">
 						<el-button type="danger" @click="goChat">本地调试</el-button>
-						<el-button @click="showDeploy">三方嵌入</el-button>
+						<el-button @click="goPublish">前往发布</el-button>
+						<el-button @click="showDeploy" v-if="appInfo.status == 2">三方嵌入</el-button>
 					</div>
 				</div>
 				<!--<div class="base-info-item">
@@ -128,13 +131,15 @@
 </template>
 
 <script>
-import {Avatar, ChatLineRound, CopyDocument, Key, Star} from "@element-plus/icons-vue";
+import {Avatar, ChatLineRound, CircleCheck, CircleClose, CopyDocument, Key, Star} from "@element-plus/icons-vue";
 import scEcharts from "@/components/scEcharts/index.vue";
 import deployDialog from '@/views/index/dialog/deploy.vue'
 import saveDialog from "@/views/dataset/save.vue";
 
 export default {
-	components: {saveDialog, Star, Key, ChatLineRound, Avatar, CopyDocument, scEcharts, deployDialog},
+	components: {
+		CircleClose,
+		CircleCheck, saveDialog, Star, Key, ChatLineRound, Avatar, CopyDocument, scEcharts, deployDialog},
 	data() {
 		return {
 			open: 1,
@@ -272,6 +277,10 @@ export default {
 						'&host=' + location.host + '&token=' + this.accessToken
 				})
 			})
+		},
+		// 前往发布
+		goPublish() {
+			this.$emit("goPublish")
 		}
 	}
 }
@@ -364,5 +373,21 @@ export default {
 	height: 365px;
 	margin-top: 20px;
 	padding: 10px;
+}
+.app-active {
+	display: flex;
+	align-items: center;
+	background: #67C23A;
+	color: #fff;
+	padding: 3px 8px;
+	border-radius: 10px;
+}
+.app-unactive {
+	display: flex;
+	align-items: center;
+	background: #F56C6C;
+	color: #fff;
+	padding: 3px 8px;
+	border-radius: 10px;
 }
 </style>

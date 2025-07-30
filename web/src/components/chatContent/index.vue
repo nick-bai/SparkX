@@ -86,7 +86,7 @@
 									>
 										<span
 											class="iconfont icon-zan icon-style"
-											@click="appraise(item, 1)"
+											@click="appraise(item, 1, index)"
 											:style="{'color': item.appraise === 1 ? 'var(--el-color-theme)' : ''}">
 										</span>
 									</el-tooltip>
@@ -98,7 +98,7 @@
 									>
 										<span
 											class="iconfont icon-cai icon-style"
-											@click="appraise(item, 2)" :style="{'color': item.appraise === 2 ? 'var(--el-color-theme)' : ''}">
+											@click="appraise(item, 2, index)" :style="{'color': item.appraise === 2 ? 'var(--el-color-theme)' : ''}">
 										</span>
 									</el-tooltip>
 									<el-tooltip
@@ -361,7 +361,16 @@ export default {
 							that.chatLogList[that.nowIndex].toolUse.push(ev.data)
 						}
 					} else {
+
 						let resData = JSON.parse(ev.data)
+						if (resData.content === '<think>') {
+							resData.content = '<blockquote><think>'
+						}
+
+						if (resData.content === '</think>') {
+							resData.content = '</think></blockquote>'
+						}
+
 						let has = false
 						that.chatLogList[that.nowIndex].content.forEach((item, index) => {
 
@@ -381,6 +390,7 @@ export default {
 							})
 						}
 
+						//console.log(that.chatLogList[that.nowIndex].content[0].content)
 						that.sliderBottom()
 					}
 				},
@@ -422,7 +432,7 @@ export default {
 			});
 		},
 		// 评价
-		async appraise(row, type) {
+		async appraise(row, type, index) {
 			if (!this.writeLog) {
 				this.$message.error('调试模式下不支持该功能')
 				return
@@ -440,7 +450,7 @@ export default {
 			if (res.code !== 0) {
 				this.$message.error(res.msg)
 			} else {
-				this.chatLogList[this.nowIndex].appraise = type
+				this.chatLogList[index].appraise = type
 			}
 		},
 		// 换一个答案

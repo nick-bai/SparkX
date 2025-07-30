@@ -13,6 +13,7 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import dev.langchain4j.community.model.zhipu.ZhipuAiChatModel;
 import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.ollama.OllamaChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import org.springframework.stereotype.Component;
 import sparkx.service.entity.application.ApplicationEntity;
@@ -43,6 +44,11 @@ public class ChatModelBuildHelper {
             return buildZhiPu();
         }
 
+        // Ollama
+        if (modelInfo.getModelFlag().equals("ollama")) {
+            return buildOllama();
+        }
+
         // 千帆、千问、豆包、GPT
         return buildOpenAI();
     }
@@ -62,6 +68,21 @@ public class ChatModelBuildHelper {
                 .model(applicationInfo.getModelName())
                 .connectTimeout(Duration.ofSeconds(60))
                 .readTimeout(Duration.ofSeconds(60))
+                .build();
+    }
+
+    /**
+     * 构建ollama
+     * @return ChatModel
+     */
+    private ChatModel buildOllama() {
+
+        JSONArray jsonOptions = JSONUtil.parseArray(modelInfo.getOptions());
+        String url = jsonOptions.getJSONObject(1).getStr("value");
+
+        return OllamaChatModel.builder()
+                .baseUrl(url)
+                .modelName(applicationInfo.getModelName())
                 .build();
     }
 

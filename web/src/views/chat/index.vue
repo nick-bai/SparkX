@@ -180,6 +180,7 @@ export default {
 					})
 
 					chatLogList.push({
+						logId: item.logId,
 						appId: item.appId,
 						sessionId: item.sessionId,
 						source: 'ai',

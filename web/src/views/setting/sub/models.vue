@@ -1,7 +1,7 @@
 <template>
 	<div class="flex-center model-list">
 		<div class="flex-center model-item" v-for="item in modelsList" :key="item.modelId">
-			<img :src="domain + item.icon" style="width:44px;height:44px"/>
+			<img :src="domain + item.icon" style="width:44px;height:auto"/>
 			<div class="info">
 				<span class="line1 model-name">{{ item.name }}</span>
 				<div class="status flex-center">

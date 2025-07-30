@@ -5,7 +5,7 @@
 
     <groupId>cn.sparkshop.ai</groupId>
     <artifactId>cn.sparkshop</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <packaging>pom</packaging>
     <name>SparkX</name>
     <description>基于大语言模型和 RAG 的知识库问答系统。开箱即用、模型中立、灵活编排，支持快速嵌入到第三方业务系统。</description>
@@ -22,7 +22,7 @@
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <java.version>17</java.version>
         <hutool.version>5.8.26</hutool.version>
-        <spark.version>1.1.0</spark.version>
+        <spark.version>1.1.1</spark.version>
         <lombok.version>1.18.24</lombok.version>
         <springboot.version>3.4.2</springboot.version>
         <mybatis-plus.version>3.5.10.1</mybatis-plus.version>
@@ -37,6 +37,8 @@
         <hanlp.version>portable-1.8.6</hanlp.version>
         <mapdb.version>3.1.0</mapdb.version>
         <retrofit2.version>2.9.0</retrofit2.version>
+        <langchain4j-ollama.version>1.1.0-rc1</langchain4j-ollama.version>
+        <ollama.version>1.21.3</ollama.version>
     </properties>
 
     <!-- 依赖声明 -->
@@ -164,6 +166,18 @@
                 <groupId>dev.langchain4j</groupId>
                 <artifactId>langchain4j-open-ai</artifactId>
                 <version>${langchain4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.langchain4j</groupId>
+                <artifactId>langchain4j-ollama</artifactId>
+                <version>${langchain4j-ollama.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>ollama</artifactId>
+                <version>${ollama.version}</version>
             </dependency>
 
             <!-- markdown -->

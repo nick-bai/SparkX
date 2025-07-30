@@ -293,15 +293,18 @@ public class ApplicationHelper {
         if (!datasetInfo.getEmbeddingModel().equals("AllMiniLmL6V2Embedding")) {
 
             TokenUsage tokenUsage = response.tokenUsage();
-            ModelsEntity modelInfo = modelsMapper.selectById(datasetInfo.getEmbeddingModelId());
-            SystemTokensEntity tokensEntity = new SystemTokensEntity();
-            tokensEntity.setSource(type);
-            tokensEntity.setPlatform(modelInfo.getName());
-            tokensEntity.setInputToken(tokenUsage.inputTokenCount());
-            tokensEntity.setOutputToken(tokenUsage.outputTokenCount());
-            tokensEntity.setTotalToken(tokenUsage.totalTokenCount());
-            tokensEntity.setCreateTime(Tool.nowDateTime());
-            systemTokensMapper.insert(tokensEntity);
+            // Ollama的一些本地模型，没有返回使用的token
+            if (tokenUsage != null) {
+                ModelsEntity modelInfo = modelsMapper.selectById(datasetInfo.getEmbeddingModelId());
+                SystemTokensEntity tokensEntity = new SystemTokensEntity();
+                tokensEntity.setSource(type);
+                tokensEntity.setPlatform(modelInfo.getName());
+                tokensEntity.setInputToken(tokenUsage.inputTokenCount());
+                tokensEntity.setOutputToken(tokenUsage.outputTokenCount());
+                tokensEntity.setTotalToken(tokenUsage.totalTokenCount());
+                tokensEntity.setCreateTime(Tool.nowDateTime());
+                systemTokensMapper.insert(tokensEntity);
+            }
         }
     }
 

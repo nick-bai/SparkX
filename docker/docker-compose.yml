@@ -20,7 +20,7 @@ services:
       retries: 10
 
   backend:
-    image: crpi-35xwxmfks2ouwnqn.cn-shanghai.personal.cr.aliyuncs.com/sparkx/sparkx-backend:1.1.0
+    image: crpi-35xwxmfks2ouwnqn.cn-shanghai.personal.cr.aliyuncs.com/sparkx/sparkx-backend:1.1.1
     container_name: sparkx-backend
     depends_on:
       postgres:
@@ -33,7 +33,7 @@ services:
       - "8989:8989"
 
   frontend:
-    image: crpi-35xwxmfks2ouwnqn.cn-shanghai.personal.cr.aliyuncs.com/sparkx/sparkx-frontend:1.1.0
+    image: crpi-35xwxmfks2ouwnqn.cn-shanghai.personal.cr.aliyuncs.com/sparkx/sparkx-frontend:1.1.1
     container_name: sparkx-frontend
     ports:
       - "8189:80"

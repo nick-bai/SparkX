@@ -67,7 +67,7 @@
 					<div class="pages">
 						<Suspense>
 							<template #default>
-								<component :is="page" :access-token="accessToken"/>
+								<component :is="page" :access-token="accessToken" @go-publish="goPublish" />
 							</template>
 							<template #fallback>
 								<el-skeleton :rows="3" />
@@ -159,6 +159,9 @@ export default {
 		async getApplicationList() {
 			let res = await this.$API.application.list.get(this.searchForm)
 			this.appList = res.data.data
+		},
+		goPublish() {
+			this.page = this.components.setting
 		}
 	}
 }
